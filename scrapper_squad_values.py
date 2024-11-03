@@ -1,8 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
+from models import SquadValue
 
 
-def get_web_content(link: str):
+def get_web_content(link: str) -> bytes:
 
     """
     Function to collect content from website.
@@ -28,7 +29,7 @@ link = 'https://www.transfermarkt.pl/premier-league/startseite/wettbewerb/GB1/pl
 
 value = get_web_content(link)
 
-def get_raw_data(page_content, class_name):
+def get_raw_data(page_content: bytes, class_name: str) -> list:
 
     """
     Function to collect values from table.
@@ -39,7 +40,6 @@ def get_raw_data(page_content, class_name):
         list_of_values (list): list with values collected from table
     """
 
-    #items
     soup = BeautifulSoup(page_content, 'html.parser')
     soup2 = BeautifulSoup(soup.prettify(), 'html.parser')
 
@@ -57,7 +57,7 @@ def get_raw_data(page_content, class_name):
 
 table = get_raw_data(value, 'items')
 
-def clean_data(list_of_items: list):
+def clean_data(list_of_items: list) -> list:
 
     """
     Function to save all data into list of dictionaries.
@@ -69,31 +69,28 @@ def clean_data(list_of_items: list):
 
     list_of_dicts = []
 
-    for item in list_of_items:
+    for row in list_of_items:
 
         one_dict = {}
         
-        one_dict['Team'] = item[1]
-        one_dict['Squad'] = int(item[2])
+        one_dict['Team'] = row[1]
+        one_dict['Squad'] = int(row[2])
 
-        avg_age = float(item[3].replace(',', '.'))
-        one_dict['Average age'] = avg_age   
+        avg_age = float(row[3].replace(',', '.'))  
 
-        if item[-1][-3] == 'd':
-            squad_value = float(item[-1][:4].replace(",", ".")) * 1000000000
-            one_dict['Squad value'] = round(squad_value, 2)
+        if row[-1][-3] == 'd':
+            squad_value = float(row[-1][:4].replace(",", ".")) * 1000000000
         else:
-            squad_value = float(item[-1][:5].replace(",", ".")) * 1000000
-            one_dict['Squad value'] = round(squad_value, 2)
+            squad_value = float(row[-1][:5].replace(",", ".")) * 1000000
 
-        if item[-2][4] == " ":
-            avg_player_value = float(item[-2][:4].replace(",", ".")) * 1000000
-            one_dict['Average player value'] = round(avg_player_value, 2)
+        if row[-2][4] == " ":
+            avg_player_value = float(row[-2][:4].replace(",", ".")) * 1000000
         else:
-            avg_player_value = float(item[-2][:5].replace(',', '.')) * 1000000
-            one_dict['Average player value'] = round(avg_player_value, 2)
+            avg_player_value = float(row[-2][:5].replace(',', '.')) * 1000000
 
-        one_dict['Season'] = '2024/25'
+        one_dict = SquadValue(team=row[1], squad_member=int(row[2]), average_age=avg_age, season='2024/25', 
+                              average_player_value=round(avg_player_value, 2), squad_value=round(squad_value, 2))
+
         list_of_dicts.append(one_dict)
 
     return list_of_dicts             

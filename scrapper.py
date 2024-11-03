@@ -1,8 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 import pprint
+from models import AnnualWage, AnnualWagesPlayers
 
-def get_content(link: str):
+def get_content(link: str) -> bytes:
 
     """
     Function to collect content from website.
@@ -22,11 +23,11 @@ def get_content(link: str):
     else:
        raise ValueError(f"Lack of content. Status code: {r.status_code}")
 
-url = 'https://fbref.com/en/comps/9/2022-2023/wages/2022-2023-Premier-League-Wages'
+url = 'https://fbref.com/en/comps/9/2020-2021/wages/2020-2021-Premier-League-Wages'
 
 salaries = get_content(url)
 
-def get_table(page_content, table_id: str):
+def get_table(page_content: bytes, table_id: str) -> list:
 
     """
     Function to collect values from table.
@@ -52,9 +53,9 @@ def get_table(page_content, table_id: str):
 
     return list_of_values
 
-annual_wages = get_table(salaries, 'squad_wages')
+annual_wages = get_table(salaries, 'player_wages')
 
-def get_data(table):
+def get_data(table) -> list[dict]:
 
     """
     Function to save all data into list of dictionaries.
@@ -66,18 +67,13 @@ def get_data(table):
 
     list_of_dicts = []
 
-    for item in table:
-        one_dict = {}
-
-        weekly_salary = item[2].strip('\n')
-        weekly_salary = weekly_salary.strip(" ")
+    for row in table:
+        
+        weekly_salary = row[2].strip('\n').strip(" ")
     
-        if weekly_salary[10] == " ":
-            weekly_salary = weekly_salary[2: 10]
-        else:
-            weekly_salary = weekly_salary[2: 11]
+        weekly_salary = weekly_salary[2: 10] if weekly_salary[10] == " " else weekly_salary[2: 11]
 
-        annual_salary = item[3].strip('\n')
+        annual_salary = row[3].strip('\n')
         annual_salary = annual_salary.strip(" ")
     
         if annual_salary[13] == " ":
@@ -85,16 +81,60 @@ def get_data(table):
         else:
             annual_salary = annual_salary[2:14]
 
-        one_dict['Team'] = item[0]
-        one_dict['Number of Players'] = int(item[1])
-        one_dict['Weekly Salary'] = float(weekly_salary.replace(",", ""))
-        one_dict['Annual Salary'] = float(annual_salary.replace(",", ""))
-        one_dict['Season'] = '2022/23'
-        
+        one_dict = AnnualWage(team=row[0], season='2022/23', weekly_salary=float(weekly_salary.replace(",", "")), annual_salary=float(annual_salary.replace(",", "")))
+       
         list_of_dicts.append(one_dict)
     
     return list_of_dicts
 
-list_of_teams = get_data(annual_wages)
+def get_data_table(table: list) -> list[dict]:
+
+    """
+    Function to save all data into list of dictionaries.
+    Args:
+        Table colleted by function get_table
+    Returns:
+        List_of_dict (list): List all values
+    """
+
+    list_of_dicts = []
+
+    for row in table:
+       
+        if len(row[2]) == 2:
+            position = row[2]
+        else:
+            position = row[2][:2]
+
+        weekly_salary = row[5].strip()
+        weekly_salary = weekly_salary[2:10]
+
+        if weekly_salary[-1] == "\n":
+            weekly_salary = float(weekly_salary[:-1].replace(',', '.')) * 1000
+        elif weekly_salary[-2] == "\n":
+            weekly_salary = float(weekly_salary[:-2].replace(',', '.')) * 1000
+        elif weekly_salary[-3] == "\n":
+            weekly_salary = float(weekly_salary[:-3].replace(',', '.')) * 1000
+        else:
+            weekly_salary = float(weekly_salary[:-4].replace(',', '.'))
+
+        annual_salary = row[-2].strip()
+        annual_salary = annual_salary[2: 13]
+        
+        if annual_salary[-1] == "\n":
+            annual_salary = float(annual_salary[:-1].replace(",", ""))
+        elif annual_salary[-2] == "\n":
+            annual_salary = float(annual_salary[:-2].replace(",", ""))
+        else:
+            annual_salary = float(annual_salary[:-3].replace(",", ""))
+
+        one_dict = AnnualWagesPlayers(season='2020/21', player_name=row[0], nationality=row[1][-3:], club=row[3], position=position,
+                                      age = int(row[4]), weekly_salary=weekly_salary, annual_salary=annual_salary)
+
+        list_of_dicts.append(one_dict)
+
+    return list_of_dicts
+
+list_of_teams = get_data_table(annual_wages)
 
 
