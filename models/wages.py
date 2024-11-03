@@ -1,4 +1,4 @@
-from sqlalchemy.orm import mapped_column, Mapped, relationship, sessionmaker, declarative_base
+from sqlalchemy.orm import mapped_column, Mapped, declarative_base
 
 Base = declarative_base()
 
@@ -37,3 +37,13 @@ class AnnualWagesPlayers(Base):
     position:Mapped[str]
     weekly_salary:Mapped[float]
     annual_salary:Mapped[float]
+
+class TransferSpending(Base):
+
+    __tablename__ = "Transfer_Spendings"
+
+    id:Mapped[int] = mapped_column(primary_key=True, index=True, unique=True)
+    season:Mapped[str]
+    club:Mapped[str]
+    average_age:Mapped[float]
+    money_spendings:Mapped[float]

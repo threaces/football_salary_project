@@ -1,7 +1,8 @@
-from .wages import AnnualWage, AnnualWagesPlayers, SquadValue
+from .wages import AnnualWage, AnnualWagesPlayers, SquadValue, TransferSpending
 
 __all__ = [
     AnnualWage, 
     AnnualWagesPlayers,
-    SquadValue
+    SquadValue,
+    TransferSpending
 ]
