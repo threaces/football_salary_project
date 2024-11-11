@@ -47,3 +47,14 @@ class TransferSpending(Base):
     club:Mapped[str]
     average_age:Mapped[float]
     money_spendings:Mapped[float]
+
+class LeagueTable(Base):
+
+    __tablename__ = "League_Table"
+
+    id:Mapped[int] = mapped_column(primary_key=True, index=True, unique=True)
+    season:Mapped[str]
+    team:Mapped[str]
+    matches:Mapped[int]
+    points:Mapped[int]
+    position:Mapped[int]

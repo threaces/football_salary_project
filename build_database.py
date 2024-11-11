@@ -1,17 +1,18 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from models import AnnualWage, AnnualWagesPlayers, SquadValue, TransferSpending
+from models import AnnualWage, AnnualWagesPlayers, SquadValue, TransferSpending, LeagueTable,Base
 from dotenv import load_dotenv
 from transfer_spendings import final_data
+from league_table_scrapper import league_table
 
 load_dotenv()
-user = 'postgres'
-password = 1111
-hostname = 'localhost'
-database_name = 'football_salaries'
+user = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+hostname = os.getenv('DB_HOSTNAME')
+database_name = os.getenv('DB_NAME')
 
-Base = declarative_base()
+
 engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{hostname}/{database_name}')
 Session = sessionmaker(bind=engine)
 

@@ -50,7 +50,9 @@ def get_data_from_website(page_content: bytes) -> list:
         cols = [element.text.strip() for element in item]
         list_of_spendings.append(cols)
 
-
+    if len(list_of_spendings) != 20:
+        list_of_spendings = list_of_spendings[::2]
+    
     final_list = list(zip(list_of_spendings, titles))
 
     return final_list
@@ -90,12 +92,11 @@ def data_manipulation(website_data:list) -> list:
 
     return list_of_database_objects
 
-website = 'https://www.transfermarkt.pl/premier-league/transfers/wettbewerb/GB1'
+website = 'https://www.transfermarkt.pl/premier-league/transfers/wettbewerb/GB1/plus/?saison_id=2024&s_w=&leihe=1&intern=0&intern=1'
 
 r = get_content(website)
 
 raw_data = get_data_from_website(r)
 final_data = data_manipulation(raw_data)
-
 
 
